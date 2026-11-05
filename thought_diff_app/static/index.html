@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Thought Diff</title>
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <h1>Thought Diff</h1>
+      <p id="tagline">Local app. Not published to an extension marketplace.</p>
+    </div>
+    <div class="top-copy">
+      <p id="disclaimer">Readings are recomputed from the Python AST as the working copy changes. Not regeneration, and not recovered model thoughts.</p>
+      <details>
+        <summary>What the readings are, and what is skipped</summary>
+        <p id="full-note">The app re-reads the working copy when it changes. It does not call a model and does not rewrite code on its own. Interpretations are deterministic AST readings of the code as it is now, not recovered thoughts of the model that wrote it. Not regeneration.</p>
+        <p id="limits">Structure and line readings are computed for Python files. Other text files are included in the code diff and read as plain text. The frozen original is never written.</p>
+      </details>
+    </div>
+    <div class="top-actions">
+      <button type="button" id="refresh">Re-evaluate</button>
+      <p id="status" role="status">Loading comparison…</p>
+    </div>
+  </header>
+
+  <div class="setup">
+  <form id="config" class="config">
+    <label>Working folder
+      <input id="working" name="working" required spellcheck="false" />
+    </label>
+    <label>Frozen original folder
+      <input id="original" name="original" spellcheck="false" />
+    </label>
+    <label>or git ref
+      <input id="git-ref" name="git_ref" placeholder="HEAD, branch, tag, commit" spellcheck="false" />
+    </label>
+    <label>Git repo
+      <input id="repo" name="repo" placeholder="defaults to the working folder" spellcheck="false" />
+    </label>
+    <button type="submit">Compare</button>
+  </form>
+  <div class="notice-row">
+    <p id="notice" role="status" hidden></p>
+    <button type="button" id="reload-disk" hidden>Reload file from disk</button>
+  </div>
+  </div>
+
+  <section class="editor-row">
+    <aside class="files">
+      <div class="files-head">
+        <h2>Working copy</h2>
+        <input id="filter" type="search" placeholder="Filter" aria-label="Filter files" />
+      </div>
+      <ul id="file-list"></ul>
+      <form id="new-file" class="new-file">
+        <input id="new-path" type="text" placeholder="new/file.py" aria-label="New file path" spellcheck="false" autocomplete="off" />
+        <button type="submit">Add</button>
+      </form>
+    </aside>
+    <div class="editor-wrap">
+      <div class="editor-bar">
+        <span id="open-label">No file open</span>
+        <div class="side-toggle" role="group" aria-label="Which copy to show in the editor">
+          <button type="button" id="side-working" aria-pressed="true">Working</button>
+          <button type="button" id="side-original" aria-pressed="false">Frozen original</button>
+        </div>
+        <button type="button" id="delete-file">Delete from working</button>
+      </div>
+      <div class="editor-scroll">
+        <div id="gutter" aria-hidden="true"></div>
+        <textarea id="editor" spellcheck="false" aria-label="Working copy editor" placeholder="Select a file. Edits are written into the working folder and re-evaluated."></textarea>
+      </div>
+      <p id="line-status" class="line-status">Open a file to see the reading of the current line.</p>
+    </div>
+  </section>
+
+  <section class="diffs" aria-label="Diffs">
+    <article class="pane">
+      <header class="pane-head">
+        <h2>Code diff <span id="count-code"></span></h2>
+      </header>
+      <div id="code-diff" class="diff"></div>
+    </article>
+    <article class="pane">
+      <header class="pane-head">
+        <h2>Thought diff <span id="count-thought"></span></h2>
+      </header>
+      <div id="thought-diff" class="diff"></div>
+    </article>
+    <article class="pane">
+      <header class="pane-head">
+        <h2>Structure diff <span id="count-structure"></span></h2>
+        <p class="legend">+ added, - removed, ~ changed, ! syntax error. A function with the same body is a rename or move, not a delete plus add.</p>
+      </header>
+      <div id="structure-diff" class="diff"></div>
+      <details id="structure-full">
+        <summary>Full structure, original and current</summary>
+        <p class="legend">Same vocabulary as <code>python -m thought_diff structure</code>.</p>
+        <div class="two">
+          <div>
+            <h3>Frozen original</h3>
+            <pre id="structure-original"></pre>
+          </div>
+          <div>
+            <h3>Working copy</h3>
+            <pre id="structure-working"></pre>
+          </div>
+        </div>
+      </details>
+    </article>
+  </section>
+  <noscript>
+    <p>This page needs JavaScript. The comparison itself is still available from the command line: <code>python -m thought_diff compare ORIGINAL WORKING</code>.</p>
+  </noscript>
+  <script src="/static/app.js"></script>
+</body>
+</html>
